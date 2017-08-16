@@ -13,3 +13,4 @@
 volumes: []
 
 UNMOUNT_DISKS: false
+FORCE_REFORMAT_DISKS: false
