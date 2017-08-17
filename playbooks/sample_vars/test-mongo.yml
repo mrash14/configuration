@@ -1,4 +1,11 @@
-# ansible-playbook -i '54.164.134.57,' -u ubuntu edx-east/mongo_3_2.yml -e@test-mongo.yml
+# Example ansible commands
+# Three node replica set
+# ansible-playbook -i '203.0.113.12,203.0.113.20,203.0.113.68' -u ubuntu edx-east/mongo_3_2.yml -e@sample_vars/test-mongo.yml
+# Single node
+# ansible-playbook -i '203.0.113.12' -u ubuntu edx-east/mongo_3_2.yml -e@sample_vars/test-mongo.yml
+
+# Passwords and relication keys in this file are examples and must be changed.
+# You must change any variable with the string "CHANGEME" in it
 
 ##### edx-secure/ansible/vars/edx.yml #####
 MONGO_HEARTBEAT_TIMEOUT_SECS: 3
@@ -9,24 +16,39 @@ MONGO_STORAGE_ENGINE_OPTIONS:
       cacheSizeGB: "{{ (( ansible_memtotal_mb / 1024 ) * 0.70 ) | round(1,'ceil') | int }}" # 70% of available ram - 11GB on m4.xlarge
 EDXAPP_MONGO_HOSTS: "{{ MONGO_RS_CONFIG.members|map(attribute='host')|list }}"
 
+##### Testing
+#UNMOUNT_DISKS: true
+
+##### edx-olive/olive-secure/ansible/vars/prod-olivex.yml
+MONGO_VOLUMES:
+  - device: /dev/xvdb
+    mount: /edx/var/mongo
+    options: "defaults,noatime"
+    fstype: ext4
+  - device: /dev/xvdc
+    mount: /edx/var/mongo/mongodb/journal
+    options: "defaults,noatime"
+    fstype: ext4
+
 ##### edx-secure/ansible/vars/stage-edx.yml #####
 MONGO_ADMIN_USER: 'admin'
-MONGO_ADMIN_PASSWORD: '794jtB7zLIvDjHGu2gD6wKUU'
+MONGO_ADMIN_PASSWORD: 'CHANGEME_794jtB7zLIvDjHGu2gD6wKUU'
 MONGO_MONITOR_USER: 'cloud-manager'
-MONGO_MONITOR_PASSWORD: '7DJ9FTWHJx4TCSPxSmx1k3DD'
+MONGO_MONITOR_PASSWORD: 'CHANGEME_7DJ9FTWHJx4TCSPxSmx1k3DD'
 MONGO_BACKUP_USER: 'backup'
-MONGO_BACKUP_PASSWORD: 'XbJA3LouKV5QDv2NQixnOrQj'
-MONGO_CLUSTERED: true
-MONGO_REPL_SET: 'jdmulloy-3.2'
+MONGO_BACKUP_PASSWORD: 'CHANGEME_XbJA3LouKV5QDv2NQixnOrQj'
+MONGO_REPL_SET: 'test-repl-set'
 mongo_bind_ip: 0.0.0.0
 MONGO_RS_CONFIG:
   _id: '{{ MONGO_REPL_SET }}'
   members:
-# Must use private IPs here
-    - host: '192.168.0.178'
+# Must use private IPs here, mongo role assumes internal ips when checking if node is in this list
+    - host: '203.0.113.12'
+    - host: '203.0.113.20'
+    - host: '203.0.113.68'
 
 MONGO_CLUSTER_KEY: |
-  wW/Cf4woqgbT8e1QzhkO3o/XZVqAv9YeSrVDYxont1rDh2nBAEGB30PhwG9ghtPY
+  CHANGEME/CHANGE/ME/CHANGE/ME9YeSrVDYxont1rDh2nBAEGB30PhwG9ghtPY
   c1QUc2etVfMnE9vbUhLimU/Xb4j4yLRDurOTi8eYoE8eAvAquLalcz7URMuw8Qt3
   fIyFa3wSXyE04rpsoBrpG53HwwFrN3pra3x4YPs8g77v50V56gfwaStNJ3KPpa5w
   RukdFXnCUPRyONSJEYwjPzI2WucnAZqlDYre6qjxL+6hCjZ4vS/RPgfoHGTUQ62W
@@ -44,13 +66,13 @@ MONGO_CLUSTER_KEY: |
   KRdC8S3Mljym9ruu4nDC3Sk4xLLuUGp/yD2O0B0dZTfYOJdt
 
 COMMON_MONGO_READ_ONLY_USER: 'read_only'
-COMMON_MONGO_READ_ONLY_PASS: "correct horse battery staple"
+COMMON_MONGO_READ_ONLY_PASS: "CHANGEME correct horse battery staple"
 
-EDXAPP_MONGO_PASSWORD: 'H8uoZEZJun9BeR5u8mMyA4yh'
+EDXAPP_MONGO_PASSWORD: 'CHANGEME_H8uoZEZJun9BeR5u8mMyA4yh'
 EDXAPP_MONGO_USER: 'edxapp003'
 
 FORUM_MONGO_USER: "comments001"
-FORUM_MONGO_PASSWORD: "j5fhX0pOwEL1S5WUFZkbZAyZ"
+FORUM_MONGO_PASSWORD: "CHANGEME_j5fhX0pOwEL1S5WUFZkbZAyZ"
 
 ##### edx-secure/ansible/vars/db/edxapp-mongo.yml #####
 # This will proxy the configured mongo user/pass/db configured in your
@@ -83,6 +105,6 @@ MONGO_USERS:
     roles: backup
 
 ##### edx-internal/ansible/vars/stage-edx.yml #####
-EDXAPP_MONGO_DB_NAME: 'jdmulloy-32'
+EDXAPP_MONGO_DB_NAME: 'test-mongo-db'
 EDXAPP_MONGO_PORT: 27017
-EDXAPP_MONGO_REPLICA_SET: 'jdmulloy-3.2'
+EDXAPP_MONGO_REPLICA_SET: '{{ MONGO_REPL_SET }}'
