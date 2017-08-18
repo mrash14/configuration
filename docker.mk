@@ -7,7 +7,8 @@ dockerfiles:=$(shell ls docker/build/*/Dockerfile)
 all_images:=$(patsubst docker/build/%/Dockerfile,%,$(dockerfiles))
 
 # Used in the test.mk file as well.
-images:=$(if $(TRAVIS_COMMIT_RANGE),$(shell git diff --name-only $(TRAVIS_COMMIT_RANGE) | python util/parsefiles.py),$(all_images))
+#images:=$(if $(TRAVIS_COMMIT_RANGE),$(shell git diff --name-only $(TRAVIS_COMMIT_RANGE) | python util/parsefiles.py),$(all_images))
+images:= mongo
 
 docker_build=docker.build.
 docker_test=docker.test.
@@ -51,7 +52,8 @@ clean: docker.clean
 docker.clean:
 	rm -rf .build
 
-docker.test.shard: $(foreach image,$(shell echo $(images) | python util/balancecontainers.py $(SHARDS) | awk 'NR%$(SHARDS)==$(SHARD)'),$(docker_test)$(image))
+#docker.test.shard: $(foreach image,$(shell echo $(images) | python util/balancecontainers.py $(SHARDS) | awk 'NR%$(SHARDS)==$(SHARD)'),$(docker_test)$(image))
+docker.test.shard: $(foreach image,$(shell echo $(images) | tr ' ' '\n' | awk 'NR%$(SHARDS)==$(SHARD)'),$(docker_test)$(image))
 
 docker.build: $(foreach image,$(images),$(docker_build)$(image))
 docker.test: $(foreach image,$(images),$(docker_test)$(image))
@@ -66,6 +68,7 @@ $(docker_build)%: docker/build/%/Dockerfile
 
 $(docker_test)%: .build/%/Dockerfile.test
 	docker build -t $*:test -f $< .
+	date
 
 $(docker_pkg)%: .build/%/Dockerfile.pkg
 	docker build -t $*:latest -f $< .
