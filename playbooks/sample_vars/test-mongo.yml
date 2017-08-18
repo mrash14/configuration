@@ -7,19 +7,9 @@
 # Passwords and relication keys in this file are examples and must be changed.
 # You must change any variable with the string "CHANGEME" in it
 
-##### edx-secure/ansible/vars/edx.yml #####
 MONGO_HEARTBEAT_TIMEOUT_SECS: 3
-MONGO_STORAGE_ENGINE: 'wiredTiger'
-MONGO_STORAGE_ENGINE_OPTIONS:
-  wiredTiger:
-    engineConfig:
-      cacheSizeGB: "{{ (( ansible_memtotal_mb / 1024 ) * 0.70 ) | round(1,'ceil') | int }}" # 70% of available ram - 11GB on m4.xlarge
 EDXAPP_MONGO_HOSTS: "{{ MONGO_RS_CONFIG.members|map(attribute='host')|list }}"
 
-##### Testing
-#UNMOUNT_DISKS: true
-
-##### edx-olive/olive-secure/ansible/vars/prod-olivex.yml
 MONGO_VOLUMES:
   - device: /dev/xvdb
     mount: /edx/var/mongo
@@ -38,7 +28,6 @@ MONGO_MONITOR_PASSWORD: 'CHANGEME_7DJ9FTWHJx4TCSPxSmx1k3DD'
 MONGO_BACKUP_USER: 'backup'
 MONGO_BACKUP_PASSWORD: 'CHANGEME_XbJA3LouKV5QDv2NQixnOrQj'
 MONGO_REPL_SET: 'test-repl-set'
-mongo_bind_ip: 0.0.0.0
 MONGO_RS_CONFIG:
   _id: '{{ MONGO_REPL_SET }}'
   members:
@@ -74,14 +63,6 @@ EDXAPP_MONGO_USER: 'edxapp003'
 FORUM_MONGO_USER: "comments001"
 FORUM_MONGO_PASSWORD: "CHANGEME_j5fhX0pOwEL1S5WUFZkbZAyZ"
 
-##### edx-secure/ansible/vars/db/edxapp-mongo.yml #####
-# This will proxy the configured mongo user/pass/db configured in your
-# secure vars file such that it can be used from the mongo_3_0 play to create users.
-# That play run might look something like:
-# ansible-playbook -i ec2.py mongo_3_0.yml --limit tag_Name_stage-edx-mongo -e@edx.yml -e@stage-edx.yml -e@edxapp-mongo.yml
-# You can also add or update users using create_mongo_users.yml
-# ansible-playbook -i localhost, create_mongo_users.yml -e@edx.yml -e@stage-edx.yml -e@db/edxapp-mongo.yml
-
 login_host: "{{ EDXAPP_MONGO_HOSTS[1] }}"
 repl_set: "{{ EDXAPP_MONGO_REPLICA_SET }}"
 MONGO_USERS:
@@ -104,7 +85,6 @@ MONGO_USERS:
     database: "admin"
     roles: backup
 
-##### edx-internal/ansible/vars/stage-edx.yml #####
 EDXAPP_MONGO_DB_NAME: 'test-mongo-db'
 EDXAPP_MONGO_PORT: 27017
 EDXAPP_MONGO_REPLICA_SET: '{{ MONGO_REPL_SET }}'
