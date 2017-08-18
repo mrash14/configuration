@@ -1,0 +1,29 @@
+---
+- name: Install jdk
+  apt:
+    name: openjdk-8-jdk
+    state: present
+    update_cache: yes
+
+- name: Install curl
+  apt:
+    name: curl
+    state: present
+    update_cache: yes
+
+- name: Install git
+  apt:
+    name: git
+    state: present
+    update_cache: yes
+
+- name: Create jenkins folder
+  file:
+      path: /usr/share/jenkins
+      state: directory
+      owner: ubuntu
+
+- name: Download Jenkins war file
+  get_url:
+    url: "{{ jenkins_war_url }}"
+    dest: /usr/share/jenkins
