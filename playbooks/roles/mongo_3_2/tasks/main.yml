@@ -57,9 +57,9 @@
     update_cache: yes
   with_items: "{{ mongodb_debian_pkgs }}"
   tags:
-    - install
-    - install:app-requirements
-    - mongo_packages
+    - "install"
+    - "install:app-requirements"
+    - "mongo_packages"
 
 - name: create mongo dirs
   file:
