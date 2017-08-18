@@ -1,1 +1,16 @@
-jenkins_war_url: https://s3.amazonaws.com/edx-testeng-tools/jenkins/jenkins_1.651.3.war
+jenkins_user: "jenkins"
+jenkins_group: "edx"
+jenkins_war_name: jenkins_1.651.3.war
+jenkins_war_url: https://s3.amazonaws.com/edx-testeng-tools/jenkins/{{ jenkins_war_name }}
+jenkins_home: /var/lib/jenkins
+java_home: /usr/lib/jvm/java-8-openjdk-amd64
+config_path: ""
+jenkins_port: 8080
+jenkins_debian_pkgs:
+    - git
+    - curl
+    - openjdk-8-jdk
+    - nginx
+    - maven
+    - daemon
+    - psmisc

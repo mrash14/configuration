@@ -1,27 +1,51 @@
 ---
-- name: Install jdk
+- name: Install jenkins specific system packages
   apt:
-    name: openjdk-8-jdk
+    name: "{{ item }}"
     state: present
     update_cache: yes
+  with_items: "{{ jenkins_debian_pkgs }}"
 
-- name: Install curl
-  apt:
-    name: curl
+- name: Create jenkins group
+  group:
+    name: "{{ jenkins_group }}"
     state: present
-    update_cache: yes
 
-- name: Install git
-  apt:
-    name: git
-    state: present
-    update_cache: yes
+- name: Add the jenkins user to the group
+  user:
+    name: "{{ jenkins_user }}"
+    append: yes
+    groups: "{{ jenkins_group }}"
+  tags:
+     - install                      
+     - install:system-requirements
 
 - name: Create jenkins folder
   file:
       path: /usr/share/jenkins
       state: directory
       owner: ubuntu
+
+- name: Create init.groovy.d
+  file:
+      path: "{{ item }}/init.groovy.d"
+      state: directory
+      owner: ubuntu
+  with_items: "{{ jenkins_home }}"
+
+- name: Create utils
+  file:
+      path: "{{ item }}/utils"
+      state: directory
+      owner: ubuntu
+  with_items: "{{ jenkins_home }}"
+
+- name: Create init-configs
+  file:
+      path: "{{ item }}/init-configs"
+      state: directory
+      owner: ubuntu
+  with_items: "{{ config_path }}"
 
 - name: Download Jenkins war file
   get_url:
