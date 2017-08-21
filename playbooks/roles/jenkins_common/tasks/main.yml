@@ -6,17 +6,6 @@
     update_cache: yes
   with_items: "{{ jenkins_debian_pkgs }}"
 
-- name: Create jenkins group
-  group:
-    name: "{{ jenkins_group }}"
-    state: present
-
-- name: Add the jenkins user to the group
-  user:
-    name: "{{ jenkins_user }}"
-    append: yes
-    groups: "{{ jenkins_group }}"
-
 - name: Create jenkins folder
   file:
     path: /usr/share/jenkins
@@ -28,20 +17,22 @@
     url: "{{ jenkins_war_url }}"
     dest: /usr/share/jenkins
 
+- name: Create jenkins group
+  group:
+    name: "{{ jenkins_group }}"
+    state: present
+
+- name: Add the jenkins user to the group
+  user:
+    name: "{{ jenkins_user }}"
+    append: yes
+    groups: "{{ jenkins_group }}"
+
 - name: Create init.groovy.d
   file:
     path: "{{ jenkins_home }}/init.groovy.d"
     state: directory
     owner: ubuntu
-
-- name: Set JENKINS_HOME env variable
-  shell: "export JENKINS_HOME={{ jenkins_home }}"
-
-- name: Set JENKINS_CONFIG_PATH env variable
-  shell: "export JENKINS_CONFIG_PATH={{ jenkins_home }}/init.groovy.d"
-
-- name: Set JAVA_HOME env variable
-  shell: "export JENKINS_HOME={{ jenkins_home }}"
 
 - name: Create utils
   file:
@@ -49,9 +40,9 @@
     state: directory
     owner: ubuntu
 
-- name: Create init-configs
+- name: Create plugins
   file:
-    path: "{{ config_path }}/init-configs"
+    path: "{{ config_path }}/plugins"
     state: directory
     owner: ubuntu
 
@@ -66,8 +57,57 @@
       repo: "{{ jenkins_configuration_git_url }}"
       dest: /git/jenkins-configuration
 
-- name: Copy jenkins-configuration scripts to init.groovy.d directory
-  shell: "cp /git/jenkins-configuration/src/main/groovy/*.groovy {{ jenkins_home }}/init.groovy.d/"
+- name: Make plugins directory
+  file:
+    path: "{{ jenkins_home }}/plugins"
+    state: directory
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
 
-- name: Run Jenkins
-  shell: "/usr/bin/java -jar /usr/share/jenkins/{{ jenkins_war_name }} --httpPort={{ jenkins_port}}"
+- name: Download Jenkins plugins
+  get_url:
+    url: "http://updates.jenkins-ci.org/download/plugins/{{ item.name }}/{{ item.version }}/{{ item.name }}.hpi"
+    dest: "/tmp/{{ item.name }}_{{ item.version }}"
+  with_items: "{{ jenkins_pinned_plugins }}"
+  register: jenkins_plugin_downloads
+  tags:
+    - install
+    - install:base
+    - install:plugins
+
+- name: Install Jenkins plugins
+  command: "cp {{ item.dest }} {{ jenkins_home }}/plugins/{{ item.item.name }}.hpi"
+  with_items: "{{ jenkins_plugin_downloads.results }}"
+  when: item.changed
+
+- name: Set Jenkins plugin permissions
+  file:
+    path: "{{ jenkins_home }}/plugins/{{ item.item.name }}.hpi"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+    mode: "0644"
+  with_items: "{{ jenkins_plugin_downloads.results }}"
+  when: item.changed
+
+- name: Create plugin pin files
+  command: "touch {{ jenkins_home }}/plugins/{{ item.name }}.jpi.pinned"
+  args:
+    creates: "{{ jenkins_home }}/plugins/{{ item.name }}.jpi.pinned"
+  with_items: "{{ jenkins_pinned_plugins }}"
+
+- name: Copy desired jenkins-configuration scripts to $JENKINS_HOME/init.groovy.d directory
+  copy:
+    src: "/git/jenkins-configuration/src/main/groovy/{{ item }}"
+    dest: "{{ jenkins_home }}/init.groovy.d/"
+    remote_src: True
+  with_items: "{{ jenkins_configuration_scripts }}"
+
+# A lot of setup scripts use env variables that need to be set on the server
+- name: Set JENKINS_HOME env variable
+  shell: "export JENKINS_HOME={{ jenkins_home }}"
+
+- name: Set JENKINS_CONFIG_PATH env variable
+  shell: "export JENKINS_CONFIG_PATH={{ jenkins_home }}/init.groovy.d"
+
+- name: Set JAVA_HOME env variable
+  shell: "export JAVA_HOME={{ jenkins_home }}"
