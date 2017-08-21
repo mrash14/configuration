@@ -102,12 +102,10 @@
     remote_src: True
   with_items: "{{ jenkins_configuration_scripts }}"
 
-# A lot of setup scripts use env variables that need to be set on the server
-- name: Set JENKINS_HOME env variable
-  shell: "export JENKINS_HOME={{ jenkins_home }}"
-
-- name: Set JENKINS_CONFIG_PATH env variable
-  shell: "export JENKINS_CONFIG_PATH={{ jenkins_home }}/init.groovy.d"
-
-- name: Set JAVA_HOME env variable
-  shell: "export JAVA_HOME={{ jenkins_home }}"
+- name: Set owner for jenkins_home
+  file:
+    path: "{{ jenkins_home }}"
+    recurse: yes
+    state: directory
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
