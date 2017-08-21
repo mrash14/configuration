@@ -16,38 +16,58 @@
     name: "{{ jenkins_user }}"
     append: yes
     groups: "{{ jenkins_group }}"
-  tags:
-     - install                      
-     - install:system-requirements
 
 - name: Create jenkins folder
   file:
-      path: /usr/share/jenkins
-      state: directory
-      owner: ubuntu
-
-- name: Create init.groovy.d
-  file:
-      path: "{{ item }}/init.groovy.d"
-      state: directory
-      owner: ubuntu
-  with_items: "{{ jenkins_home }}"
-
-- name: Create utils
-  file:
-      path: "{{ item }}/utils"
-      state: directory
-      owner: ubuntu
-  with_items: "{{ jenkins_home }}"
-
-- name: Create init-configs
-  file:
-      path: "{{ item }}/init-configs"
-      state: directory
-      owner: ubuntu
-  with_items: "{{ config_path }}"
+    path: /usr/share/jenkins
+    state: directory
+    owner: ubuntu
 
 - name: Download Jenkins war file
   get_url:
     url: "{{ jenkins_war_url }}"
     dest: /usr/share/jenkins
+
+- name: Create init.groovy.d
+  file:
+    path: "{{ jenkins_home }}/init.groovy.d"
+    state: directory
+    owner: ubuntu
+
+- name: Set JENKINS_HOME env variable
+  shell: "export JENKINS_HOME={{ jenkins_home }}"
+
+- name: Set JENKINS_CONFIG_PATH env variable
+  shell: "export JENKINS_CONFIG_PATH={{ jenkins_home }}/init.groovy.d"
+
+- name: Set JAVA_HOME env variable
+  shell: "export JENKINS_HOME={{ jenkins_home }}"
+
+- name: Create utils
+  file:
+    path: "{{ jenkins_home }}/utils"
+    state: directory
+    owner: ubuntu
+
+- name: Create init-configs
+  file:
+    path: "{{ config_path }}/init-configs"
+    state: directory
+    owner: ubuntu
+
+- name: Create folder for git repositories
+  file:
+    path: /git
+    state: directory
+    owner: ubuntu
+
+- name: Download jenkins-configuration repo
+  git:
+      repo: "{{ jenkins_configuration_git_url }}"
+      dest: /git/jenkins-configuration
+
+- name: Copy jenkins-configuration scripts to init.groovy.d directory
+  shell: "cp /git/jenkins-configuration/src/main/groovy/*.groovy {{ jenkins_home }}/init.groovy.d/"
+
+- name: Run Jenkins
+  shell: "/usr/bin/java -jar /usr/share/jenkins/{{ jenkins_war_name }} --httpPort={{ jenkins_port}}"
