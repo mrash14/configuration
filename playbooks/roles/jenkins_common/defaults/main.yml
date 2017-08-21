@@ -1,12 +1,13 @@
 jenkins_user: "jenkins"
 jenkins_group: "edx"
 jenkins_war_name: jenkins_1.651.3.war
+jenkins_port: 8080
 jenkins_war_url: https://s3.amazonaws.com/edx-testeng-tools/jenkins/{{ jenkins_war_name }}
 jenkins_home: /var/lib/jenkins
 java_home: /usr/lib/jvm/java-8-openjdk-amd64
 jenkins_configuration_git_url: https://github.com/edx/jenkins-configuration.git
-config_path: "/init-configs"
-jenkins_port: 8080
+jenkins_config_files: /init-configs
+jenkins_config_templates: "{{ role_path }}/files"
 
 jenkins_debian_pkgs:
   - git

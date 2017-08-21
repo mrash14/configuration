@@ -42,7 +42,7 @@
 
 - name: Create plugins
   file:
-    path: "{{ config_path }}/plugins"
+    path: "{{ jenkins_home }}/plugins"
     state: directory
     owner: ubuntu
 
@@ -99,8 +99,13 @@
   copy:
     src: "/git/jenkins-configuration/src/main/groovy/{{ item }}"
     dest: "{{ jenkins_home }}/init.groovy.d/"
-    remote_src: True
+    remote_src: true
   with_items: "{{ jenkins_configuration_scripts }}"
+
+- name: Copy config documents
+  copy:
+    src: "{{ jenkins_config_templates }}/*"
+    dest: "{{ jenkins_config_files }}/init-configs/"
 
 - name: Set owner for jenkins_home
   file:
