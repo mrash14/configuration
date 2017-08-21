@@ -95,13 +95,6 @@
     creates: "{{ jenkins_home }}/plugins/{{ item.name }}.jpi.pinned"
   with_items: "{{ jenkins_pinned_plugins }}"
 
-- name: Copy desired jenkins-configuration scripts to $JENKINS_HOME/init.groovy.d directory
-  copy:
-    src: "/git/jenkins-configuration/src/main/groovy/{{ item }}"
-    dest: "{{ jenkins_home }}/init.groovy.d/"
-    remote_src: true
-  with_items: "{{ jenkins_configuration_scripts }}"
-
 - name: Copy config documents
   copy:
     src: "{{ jenkins_config_templates }}/*"
