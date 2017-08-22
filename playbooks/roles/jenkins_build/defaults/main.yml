@@ -1,0 +1,41 @@
+build_jenkins_user: "jenkins"
+build_jenkins_group: "edx"
+build_jenkins_port: 8080
+build_jenkins_home: /var/lib/jenkins
+build_jenkins_java_home: /usr/lib/jvm/java-8-openjdk-amd64
+build_jenkins_git_home: /git
+
+build_jenkins_war_name: jenkins_1.651.3.war
+build_jenkins_war_url: https://s3.amazonaws.com/edx-testeng-tools/jenkins/{{ jenkins_war_name }}
+
+build_jenkins_debian_pkgs:
+  - git
+  - curl
+  - openjdk-8-jdk
+  - nginx
+  - maven
+  - daemon
+  - psmisc
+
+build_jenkins_configuration_git_url: https://github.com/edx/jenkins-configuration.git
+build_jenkins_config_files: /init-configs
+
+build_jenkins_configuration_scripts:
+  - 1addJarsToClasspath.groovy
+  - 2checkInstalledPlugins.groovy
+  - 3mainConfiguration.groovy
+  - 3shutdownCLI.groovy
+  - 4configureEc2Plugin.groovy
+  - 4configureGHOAuth.groovy
+  - 4configureGHPRB.groovy
+  - 4configureGit.groovy
+  - 4configureHipChat.groovy
+  - 4configureJobConfigHistory.groovy
+  - 4configureMailerPlugin.groovy
+  - 5addSeedJob.groovy
+  - 5createLoggers.groovy
+  - 6importCredentials.groovy
+
+# THIS WILL LIKELY NEED TO BE REPLACED. FOR NOW HARDCODE THE DIRECTORY
+path_to_files: "~/git/configuration/playbooks/roles/jenkins_build/files"
+build_jenkins_plugins: "{{ lookup('file', '{{ path_to_files }}/plugins.yml') | from_yaml }}"

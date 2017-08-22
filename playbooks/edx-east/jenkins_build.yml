@@ -5,4 +5,4 @@
   gather_facts: True
   user: ubuntu
   roles:
-    - jenkins_common
+    - jenkins_build

@@ -1,0 +1,16 @@
+---
+- name: Create folder for git repositories
+  file:
+    path: "{{ build_jenkins_git_home }}"
+    state: directory
+    owner: ubuntu
+
+- name: Download jenkins-configuration repo
+  git:
+      repo: "{{ build_jenkins_configuration_git_url }}"
+      dest: /git/jenkins-configuration
+
+- name: Copy config documents
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: "{{ build_jenkins_config_files }}/"
